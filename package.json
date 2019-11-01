@@ -1,0 +1,12 @@
+{
+    "name": "dcu-opentimetabe",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "dependencies": {
+      "request": "^2.88.0",
+      "request-promise": "^4.2.4"
+    },
+    "version": "1.0.0"
+  }
+  
