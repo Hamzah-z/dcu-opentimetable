@@ -1,4 +1,4 @@
-# dcu-opentimetable
+
 Fetch classes for a specified course on a day from https://opentimetable.dcu.ie/
 
 ## Prerequisites 
