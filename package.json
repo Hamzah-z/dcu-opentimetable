@@ -1,11 +1,12 @@
 {
   "name": "dcu-opentimetabe",
+  "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node examples/FetchATimetable.js"
   },
   "dependencies": {
     "request": "^2.88.2",
     "request-promise": "^4.2.6"
-  },
-  "version": "1.0.0"
+  }
 }

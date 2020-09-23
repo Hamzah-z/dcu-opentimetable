@@ -37,7 +37,7 @@ function StartOfWeek(DateToFetch) {
 }
 
 function ConstructRequestBody(CourseCode, Day, DateToFetch) {
-    let RequestBodyTemplate = require('../templates/body.json')
+    let RequestBodyTemplate = require('./templates/body.json')
 
     FinalDayNumber = Weekdays.indexOf(Day) + 1
 
