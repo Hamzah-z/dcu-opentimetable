@@ -10,7 +10,7 @@ const Request = require('request-promise')
  * If you want a chronologically sorted array of a given day's lectures, call 
  * FetchClassesForDay('NameOfDay')
  * 
- * @author Hamzah
+ * @author Hamzah Zahoor
  * 
 */
 
@@ -18,11 +18,12 @@ const Request = require('request-promise')
 
 const Weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] // Used to fetch the index for a day
 
-const CourseCategoryIdentities = {
-    'CA1': '3b57818e-d34a-fe27-62d7-76ab6d97d1af',
-    'CASE2': '38b55ac0-a242-23d3-4a10-79f11bdd780c',
-    'CASE3': 'ac1c8470-e74f-5239-c153-ccc42c836613',
-    'CASE4': '3e2d4f8b-bdb3-5be5-de32-f63308109633',
+const ReqHeaders = {
+    "Authorization": "basic T64Mdy7m[",
+    "Content-Type" : "application/json; charset=utf-8",
+    "credentials": "include",
+    "Referer" : "https://opentimetable.dcu.ie/",
+    "Origin" : "https://opentimetable.dcu.ie/"
 }
 
 //
@@ -36,7 +37,7 @@ function StartOfWeek(DateToFetch) {
     // Outputs: YYYY-MM-DDT00:00:00.000Z
 }
 
-function ConstructRequestBody(CourseCode, Day, DateToFetch) {
+function ConstructRequestBody(Day, DateToFetch, CourseIdentity) {
     let RequestBodyTemplate = require('./templates/body.json')
 
     FinalDayNumber = Weekdays.indexOf(Day) + 1
@@ -45,30 +46,50 @@ function ConstructRequestBody(CourseCode, Day, DateToFetch) {
     RequestBodyTemplate['ViewOptions']['Days'][0]['Name'] = Day
     RequestBodyTemplate['ViewOptions']['Days'][0]['DayOfWeek'] = Weekdays.indexOf(Day) + 1
     
-    RequestBodyTemplate['CategoryIdentities'][0] = CourseCategoryIdentities[CourseCode]
+    RequestBodyTemplate['CategoryIdentities'][0] = CourseIdentity
 
     return RequestBodyTemplate
 }
 
-function FetchRawTimetableData(CourseCode, Day, DateToFetch = new Date()) {
-
-    const ReqHeaders = {
-        "Authorization": "basic T64Mdy7m[",
-        "Content-Type" : "application/json; charset=utf-8",
-        "credentials": "include",
-        "Referer" : "https://opentimetable.dcu.ie/",
-        "Origin" : "https://opentimetable.dcu.ie/"
-    }
+async function FetchCourseCodeIdentity(Query) {
 
     var ReqPayload = {
         method: 'POST',
-        uri: 'https://opentimetable.dcu.ie/broker/api/categoryTypes/241e4d36-60e0-49f8-b27e-99416745d98d/categories/events/filter',
+        uri: `https://opentimetable.dcu.ie/broker/api/CategoryTypes/241e4d36-60e0-49f8-b27e-99416745d98d/Categories/Filter?pageNumber=1&query=${Query}`,
         headers: ReqHeaders,
-        body: ConstructRequestBody(CourseCode, Day, DateToFetch),
         json: true
     };
 
     return new Promise(function(resolve, reject) {
+        Request(ReqPayload) // Send the HTTP Request
+            .then(function(res_body) {
+                let Results = res_body['Results']
+
+                if (Results.length == 0) {
+                    reject('Course identity not found with supplied course code.')
+                } else {
+                    resolve(res_body['Results'][0]['Identity'])
+                }
+            })
+            .catch(function (err) { // Catch any errors
+                reject(err)
+            });
+    })
+}
+
+async function FetchRawTimetableData(CourseCode, Day, DateToFetch = new Date()) {
+
+    let CourseIdentity = await FetchCourseCodeIdentity(CourseCode);
+    
+    return new Promise(function(resolve, reject) {
+        const ReqPayload = {
+            method: 'POST',
+            uri: 'https://opentimetable.dcu.ie/broker/api/categoryTypes/241e4d36-60e0-49f8-b27e-99416745d98d/categories/events/filter',
+            headers: ReqHeaders,
+            body: ConstructRequestBody(Day, DateToFetch, CourseIdentity),
+            json: true
+        };
+
         Request(ReqPayload) // Send the HTTP Request
             .then(function(res_body) {
                 resolve(res_body)
