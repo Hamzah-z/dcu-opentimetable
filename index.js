@@ -4,12 +4,6 @@ const Request = require('request-promise')
  * This script sends a POST request to the opentimetable endpoint to fetch classes
  * Then stores relevant info for each class in an object, and finally stores each object in one array and resolves it
  * 
- * NOTE: If you want to fetch just the entire response, just call
- * FetchTimetable(EditTemplate(LoadNewTemplate(), 'NameOfDay'))
- * 
- * If you want a chronologically sorted array of a given day's lectures, call 
- * FetchClassesForDay('NameOfDay')
- * 
  * @author Hamzah Zahoor
  * 
 */
